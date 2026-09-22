@@ -1,3 +1,9 @@
+# Fantasize Technology Unleash fork
+
+Modified 2026-09-22. Multi-project OSS support; [changes and license notes](FANTASIZE.md).
+
+[![Quality Gate](https://sonar.infra.fantasizetech.co/api/project_badges/measure?project=FantasizeTech_unleash-fantasize&metric=alert_status)](https://sonar.infra.fantasizetech.co/dashboard?id=FantasizeTech_unleash-fantasize)
+
 <div align="center">
 
 <a href="https://getunleash.io" title="Unleash - Empowering developers to release with confidence">

@@ -94,7 +94,6 @@ export const routes: IRoute[] = [
         title: 'Create',
         component: LazyCreateProject,
         type: 'protected',
-        enterprise: true,
         menu: {},
     },
     {

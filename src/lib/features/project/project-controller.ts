@@ -48,6 +48,8 @@ import ProjectStatusController from '../project-status/project-status-controller
 import FeatureLinkController from '../feature-links/feature-link-controller.js';
 import { ContextController } from '../context/context.js';
 
+import FantasizeProjectController from './fantasize-project-controller.js';
+
 export default class ProjectController extends Controller {
     private projectService: ProjectService;
 
@@ -203,6 +205,7 @@ export default class ProjectController extends Controller {
             ],
         });
 
+        this.use('/', new FantasizeProjectController(config, services).router);
         this.use('/', new ProjectFeaturesController(config, services).router);
         this.use('/', new DependentFeaturesController(config, services).router);
         this.use(
@@ -229,9 +232,7 @@ export default class ProjectController extends Controller {
     ): Promise<void> {
         const { user } = req;
         const projects = await this.projectService.getProjects(
-            {
-                id: 'default',
-            },
+            { archived: req.query.archived === 'true' },
             user.id,
         );
 

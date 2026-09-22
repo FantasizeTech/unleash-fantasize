@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { render } from 'utils/testRenderer';
 import { testServerRoute, testServerSetup } from 'utils/testServer';
 import { CreateProjectDialog } from './CreateProjectDialog.tsx';
@@ -11,7 +11,7 @@ const server = testServerSetup();
 test.each([
     ['current', CreateProjectDialog],
     ['legacy', LegacyCreateProjectDialog],
-])('%s dialog submits an OSS-compatible project', async (_name, Dialog) => {
+])('%s dialog submits an OSS-compatible project', async (name, Dialog) => {
     testServerRoute(server, '/api/admin/ui-config', {
         resourceLimits: { projects: 500 },
         versionInfo: { current: { oss: '8.2.0' } },
@@ -30,9 +30,12 @@ test.each([
     render(<Dialog open={true} onClose={() => {}} />, {
         permissions: [{ permission: CREATE_PROJECT }],
     });
-    const nameInput = await screen.findByRole('textbox', {
-        name: /project name/i,
-    });
+    const nameInput =
+        name === 'current'
+            ? within(
+                  await screen.findByTestId('PROJECT_FORM_NAME_INPUT'),
+              ).getByRole('textbox')
+            : await screen.findByRole('textbox', { name: /project name/i });
     fireEvent.change(nameInput, {
         target: { value: 'FantasizeTech' },
     });

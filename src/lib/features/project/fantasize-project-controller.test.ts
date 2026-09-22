@@ -5,6 +5,7 @@ import { createTestConfig } from '../../../test/config/test-config.js';
 import { createFakeProjectService } from './createProjectService.js';
 import FantasizeProjectController from './fantasize-project-controller.js';
 import ProjectController from './project-controller.js';
+import type ProjectService from './project-service.js';
 import {
     CREATE_PROJECT,
     UPDATE_PROJECT,
@@ -29,9 +30,14 @@ beforeEach(async () => {
     );
     allowed = true;
     permissions = [];
-    transaction = vi.fn(async (fn) => fn(fixture.projectService));
+    transaction = vi.fn();
     const service = Object.assign(fixture.projectService, {
-        transactional: transaction,
+        transactional: async <R>(
+            fn: (service: ProjectService) => R,
+        ): Promise<R> => {
+            transaction();
+            return fn(fixture.projectService);
+        },
     });
     app = express();
     app.use(express.json());

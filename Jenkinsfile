@@ -13,5 +13,12 @@ pipeline {
  post { always { archiveArtifacts artifacts: 'prepush-*.json,verified-image.sha256', allowEmptyArchive: true } } }
         stage('Push Harbor image') { steps { withCredentials([usernamePassword(credentialsId: 'harbor-fantasizetech-publisher', usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASSWORD')]) { sh 'bash ci/push-image.sh' }
  archiveArtifacts artifacts: 'release.json,image-ref.txt', fingerprint: true } }
+        stage('Deploy staging') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'prod-app-deploy-ssh', usernameVariable: 'DEPLOY_USER', passwordVariable: 'DEPLOY_PASSWORD'), usernamePassword(credentialsId: 'harbor-fantasizetech-publisher', usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASSWORD')]) {
+                    sh 'bash ci/deploy-staging.sh'
+                }
+            }
+        }
     }
 }

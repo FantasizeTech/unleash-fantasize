@@ -7,6 +7,6 @@ pnpm install --frozen-lockfile --ignore-scripts
 pnpm exec biome check src/lib/features/project/fantasize-project-controller.ts src/lib/features/project/fantasize-project-controller.test.ts frontend/src/component/project/ProjectList/ProjectCreationButton/ProjectCreationButton.tsx frontend/src/component/project/ProjectList/ProjectList.test.tsx vitest.fantasize.config.ts
 pnpm exec vitest run --config vitest.fantasize.config.ts --coverage
 pnpm --dir frontend exec vitest run src/component/common/Announcer/AnnouncerContext/AnnouncerContext.test.tsx src/component/project/ProjectList/ProjectList.test.tsx src/component/project/Project/CreateProject/CreateProjectForm/LegacyCreateProjectDialog.test.tsx --maxWorkers=1 --coverage --coverage.reporter=lcov --coverage.reportsDirectory=../coverage/frontend
-cat coverage/frontend/lcov.info >> coverage/lcov.info
+sed 's|^SF:src/|SF:frontend/src/|' coverage/frontend/lcov.info >> coverage/lcov.info
 pnpm run build:backend
 pnpm --dir frontend run ts:check

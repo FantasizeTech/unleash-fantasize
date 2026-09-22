@@ -18,7 +18,7 @@ let app: express.Express;
 let fixture: ReturnType<typeof createFakeProjectService>;
 let allowed: boolean;
 let permissions: string[];
-let transaction: ReturnType<typeof vi.fn>;
+let transaction: ReturnType<typeof vi.fn<() => void>>;
 
 beforeEach(async () => {
     const config = createTestConfig();

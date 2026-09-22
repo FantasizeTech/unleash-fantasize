@@ -90,3 +90,24 @@ describe('project listing', () => {
         expect(respondWithValidation.mock.calls[0][3].projects).toEqual(projects);
     });
 });
+
+test('archives and revives a project but protects Default', async () => {
+    await request(app).post('/projects').send({ name: 'Lifecycle', id: 'lifecycle' }).expect(201);
+    await request(app).post('/projects/archive/lifecycle').expect(200);
+    await request(app).post('/projects/revive/lifecycle').expect(200);
+    await request(app).post('/projects/archive/default').expect(403);
+    await request(app).delete('/projects/missing').expect(404);
+});
+
+test('requires permissions for lifecycle and flag moves', async () => {
+    allowed = false;
+    await request(app).post('/projects/archive/one').expect(403);
+    await request(app).post('/projects/revive/one').expect(403);
+    await request(app).delete('/projects/one').expect(403);
+    await request(app).post('/projects/one/features/flag/changeProject').send({ newProjectId: 'two' }).expect(403);
+});
+
+test('validates move target and uses service permission checks for both projects', async () => {
+    await request(app).post('/projects/one/features/flag/changeProject').send({}).expect(400);
+    await request(app).post('/projects/one/features/flag/changeProject').send({ newProjectId: 'two' }).expect(404);
+});

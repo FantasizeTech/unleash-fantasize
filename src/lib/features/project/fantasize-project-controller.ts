@@ -5,8 +5,9 @@ import Controller from '../../routes/controller.js';
 import type { IAuthRequest } from '../../routes/unleash-types.js';
 import type { IUnleashConfig } from '../../types/option.js';
 import type { IUnleashServices } from '../../services/index.js';
-import { CREATE_PROJECT, UPDATE_PROJECT } from '../../types/permissions.js';
+import { CREATE_PROJECT, UPDATE_PROJECT, DELETE_PROJECT, MOVE_FEATURE_TOGGLE } from '../../types/permissions.js';
 import { projectSchema } from '../../services/project-schema.js';
+import InvalidOperationError from '../../error/invalid-operation-error.js';
 import { nameType } from '../../routes/util.js';
 
 // Only OSS fields are accepted. Enterprise modes and workflows remain unavailable.
@@ -28,6 +29,10 @@ export default class FantasizeProjectController extends Controller {
         this.route({ path: '', method: 'post', permission: CREATE_PROJECT, handler: this.create });
         this.route({ path: '/validate', method: 'post', permission: CREATE_PROJECT, handler: this.validate });
         this.route({ path: '/:projectId', method: 'put', permission: UPDATE_PROJECT, handler: this.update });
+        this.route({ path: '/archive/:projectId', method: 'post', permission: DELETE_PROJECT, handler: this.archive, acceptAnyContentType: true });
+        this.route({ path: '/revive/:projectId', method: 'post', permission: CREATE_PROJECT, handler: this.revive, acceptAnyContentType: true });
+        this.route({ path: '/:projectId', method: 'delete', permission: DELETE_PROJECT, handler: this.remove, acceptAnyContentType: true });
+        this.route({ path: '/:projectId/features/:featureName/changeProject', method: 'post', permission: MOVE_FEATURE_TOGGLE, handler: this.moveFeature });
     }
 
     async create(req: IAuthRequest, res: Response): Promise<void> {
@@ -56,4 +61,39 @@ export default class FantasizeProjectController extends Controller {
         });
         res.status(200).end();
     }
+    async archive(req: IAuthRequest, res: Response): Promise<void> {
+        if (req.params.projectId === 'default') {
+            throw new InvalidOperationError('The default project cannot be archived');
+        }
+        await this.projects.transactional(async (service) => {
+            await service.getProject(req.params.projectId);
+            await service.archiveProject(req.params.projectId, req.audit);
+        });
+        res.status(200).end();
+    }
+
+    async revive(req: IAuthRequest, res: Response): Promise<void> {
+        await this.projects.transactional(async (service) => {
+            await service.getProject(req.params.projectId);
+            await service.reviveProject(req.params.projectId, req.audit);
+        });
+        res.status(200).end();
+    }
+
+    async remove(req: IAuthRequest, res: Response): Promise<void> {
+        await this.projects.transactional(async (service) => {
+            await service.getProject(req.params.projectId);
+            await service.deleteProject(req.params.projectId, req.user, req.audit);
+        });
+        res.status(200).end();
+    }
+
+    async moveFeature(req: IAuthRequest, res: Response): Promise<void> {
+        const { newProjectId } = await Joi.object({ newProjectId: nameType.required() }).validateAsync(req.body);
+        const feature = await this.projects.transactional((service) =>
+            service.changeProject(newProjectId, req.params.featureName, req.user, req.params.projectId, req.audit),
+        );
+        res.status(200).json(feature);
+    }
+
 }

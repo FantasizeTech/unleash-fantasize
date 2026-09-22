@@ -17,6 +17,7 @@ with tempfile.TemporaryDirectory(prefix='unleash-deploy-') as tmp:
  try:
   subprocess.run(command+['up','-d','--no-deps','--wait','--wait-timeout','180','unleash'],cwd=root,env=env,check=True)
   with urllib.request.urlopen('http://127.0.0.1:4242/health',timeout=10) as response:assert response.status==200
+  subprocess.run([sys.executable,str(root/'verify-fork.py')],check=True)
  except Exception:
   if previous is None:
    override.unlink()

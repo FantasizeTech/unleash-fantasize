@@ -12,6 +12,7 @@ import { nameType } from '../../routes/util.js';
 
 // Only OSS fields are accepted. Enterprise modes and workflows remain unavailable.
 const inputSchema = projectSchema
+    .fork(['id'], (schema) => schema.optional())
     .fork(['name'], (schema) => schema.trim().min(1).max(255))
     .fork(['mode', 'changeRequestEnvironments', 'featureNaming'], (schema) =>
         schema.forbidden(),

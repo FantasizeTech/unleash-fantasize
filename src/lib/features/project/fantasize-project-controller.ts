@@ -5,7 +5,12 @@ import Controller from '../../routes/controller.js';
 import type { IAuthRequest } from '../../routes/unleash-types.js';
 import type { IUnleashConfig } from '../../types/option.js';
 import type { IUnleashServices } from '../../services/index.js';
-import { CREATE_PROJECT, UPDATE_PROJECT, DELETE_PROJECT, MOVE_FEATURE_TOGGLE } from '../../types/permissions.js';
+import {
+    CREATE_PROJECT,
+    UPDATE_PROJECT,
+    DELETE_PROJECT,
+    MOVE_FEATURE_TOGGLE,
+} from '../../types/permissions.js';
 import { projectSchema } from '../../services/project-schema.js';
 import InvalidOperationError from '../../error/invalid-operation-error.js';
 import { nameType } from '../../routes/util.js';
@@ -27,13 +32,51 @@ export default class FantasizeProjectController extends Controller {
     constructor(config: IUnleashConfig, services: IUnleashServices) {
         super(config);
         this.projects = services.transactionalProjectService;
-        this.route({ path: '', method: 'post', permission: CREATE_PROJECT, handler: this.create });
-        this.route({ path: '/validate', method: 'post', permission: CREATE_PROJECT, handler: this.validate });
-        this.route({ path: '/:projectId', method: 'put', permission: UPDATE_PROJECT, handler: this.update });
-        this.route({ path: '/archive/:projectId', method: 'post', permission: DELETE_PROJECT, handler: this.archive, acceptAnyContentType: true });
-        this.route({ path: '/revive/:projectId', method: 'post', permission: CREATE_PROJECT, handler: this.revive, acceptAnyContentType: true });
-        this.route({ path: '/:projectId', method: 'delete', permission: DELETE_PROJECT, handler: this.remove, acceptAnyContentType: true });
-        this.route({ path: '/:projectId/features/:featureName/changeProject', method: 'post', permission: MOVE_FEATURE_TOGGLE, handler: this.moveFeature });
+        this.route({
+            path: '',
+            method: 'post',
+            permission: CREATE_PROJECT,
+            handler: this.create,
+        });
+        this.route({
+            path: '/validate',
+            method: 'post',
+            permission: CREATE_PROJECT,
+            handler: this.validate,
+        });
+        this.route({
+            path: '/:projectId',
+            method: 'put',
+            permission: UPDATE_PROJECT,
+            handler: this.update,
+        });
+        this.route({
+            path: '/archive/:projectId',
+            method: 'post',
+            permission: DELETE_PROJECT,
+            handler: this.archive,
+            acceptAnyContentType: true,
+        });
+        this.route({
+            path: '/revive/:projectId',
+            method: 'post',
+            permission: CREATE_PROJECT,
+            handler: this.revive,
+            acceptAnyContentType: true,
+        });
+        this.route({
+            path: '/:projectId',
+            method: 'delete',
+            permission: DELETE_PROJECT,
+            handler: this.remove,
+            acceptAnyContentType: true,
+        });
+        this.route({
+            path: '/:projectId/features/:featureName/changeProject',
+            method: 'post',
+            permission: MOVE_FEATURE_TOGGLE,
+            handler: this.moveFeature,
+        });
     }
 
     async create(req: IAuthRequest, res: Response): Promise<void> {
@@ -45,26 +88,38 @@ export default class FantasizeProjectController extends Controller {
     }
 
     async validate(req: IAuthRequest, res: Response): Promise<void> {
-        const { id } = await Joi.object({ id: nameType.required() }).validateAsync(req.body);
+        const { id } = await Joi.object({
+            id: nameType.required(),
+        }).validateAsync(req.body);
         await this.projects.validateId(id);
         res.status(200).json({ valid: true });
     }
 
-    async update(req: IAuthRequest<{ projectId: string }>, res: Response): Promise<void> {
+    async update(
+        req: IAuthRequest<{ projectId: string }>,
+        res: Response,
+    ): Promise<void> {
         const data = await inputSchema
             .fork(['environments'], (schema) => schema.forbidden())
             .validateAsync(req.body);
         // Path is the authorization boundary; a body id may not target another project.
-        await Joi.valid(req.params.projectId).validateAsync(data.id ?? req.params.projectId);
+        await Joi.valid(req.params.projectId).validateAsync(
+            data.id ?? req.params.projectId,
+        );
         await this.projects.transactional(async (service) => {
             await service.getProject(req.params.projectId);
-            await service.updateProject({ ...data, id: req.params.projectId }, req.audit);
+            await service.updateProject(
+                { ...data, id: req.params.projectId },
+                req.audit,
+            );
         });
         res.status(200).end();
     }
     async archive(req: IAuthRequest, res: Response): Promise<void> {
         if (req.params.projectId === 'default') {
-            throw new InvalidOperationError('The default project cannot be archived');
+            throw new InvalidOperationError(
+                'The default project cannot be archived',
+            );
         }
         await this.projects.transactional(async (service) => {
             await service.getProject(req.params.projectId);
@@ -84,17 +139,28 @@ export default class FantasizeProjectController extends Controller {
     async remove(req: IAuthRequest, res: Response): Promise<void> {
         await this.projects.transactional(async (service) => {
             await service.getProject(req.params.projectId);
-            await service.deleteProject(req.params.projectId, req.user, req.audit);
+            await service.deleteProject(
+                req.params.projectId,
+                req.user,
+                req.audit,
+            );
         });
         res.status(200).end();
     }
 
     async moveFeature(req: IAuthRequest, res: Response): Promise<void> {
-        const { newProjectId } = await Joi.object({ newProjectId: nameType.required() }).validateAsync(req.body);
+        const { newProjectId } = await Joi.object({
+            newProjectId: nameType.required(),
+        }).validateAsync(req.body);
         const feature = await this.projects.transactional((service) =>
-            service.changeProject(newProjectId, req.params.featureName, req.user, req.params.projectId, req.audit),
+            service.changeProject(
+                newProjectId,
+                req.params.featureName,
+                req.user,
+                req.params.projectId,
+                req.audit,
+            ),
         );
         res.status(200).json(feature);
     }
-
 }

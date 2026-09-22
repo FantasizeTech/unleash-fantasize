@@ -17,9 +17,7 @@ interface ICreateButtonData {
 
 const NAVIGATE_TO_CREATE_PROJECT = 'NAVIGATE_TO_CREATE_PROJECT';
 
-function resolveCreateButtonData(
-    hasAccess: boolean,
-): ICreateButtonData {
+function resolveCreateButtonData(hasAccess: boolean): ICreateButtonData {
     if (!hasAccess) {
         return {
             tooltip: {
@@ -48,9 +46,7 @@ export const ProjectCreationButton: FC<ProjectCreationButtonProps> = ({
     const { loading } = useUiConfig();
     const useNewDesign = useUiFlag('newModalDesign');
 
-    const createButtonData = resolveCreateButtonData(
-        hasAccess(CREATE_PROJECT),
-    );
+    const createButtonData = resolveCreateButtonData(hasAccess(CREATE_PROJECT));
 
     return (
         <>
@@ -66,7 +62,13 @@ export const ProjectCreationButton: FC<ProjectCreationButtonProps> = ({
             >
                 New project
             </ResponsiveButton>
-            <a href="https://github.com/FantasizeTech/unleash-fantasize" target="_blank" rel="noopener noreferrer">Fantasize source (AGPL)</a>
+            <a
+                href='https://github.com/FantasizeTech/unleash-fantasize'
+                target='_blank'
+                rel='noopener noreferrer'
+            >
+                Fantasize source (AGPL)
+            </a>
             {useNewDesign ? (
                 <CreateProjectDialog
                     open={isDialogOpen}

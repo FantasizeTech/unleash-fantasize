@@ -11,7 +11,6 @@ import {
     RoleName,
     TEST_AUDIT_USER,
 } from '../../types/index.js';
-import type { IUnleashServices } from '../../services/index.js';
 
 const user = { id: 7, permissions: [], isAPI: false };
 let app: express.Express;
@@ -21,7 +20,8 @@ let permissions: string[];
 let transaction: ReturnType<typeof vi.fn>;
 
 beforeEach(async () => {
-    const config = createTestConfig({ isEnterprise: false });
+    const config = createTestConfig();
+    config.isEnterprise = false;
     fixture = createFakeProjectService(config);
     await fixture.accessService.createRole(
         { name: RoleName.OWNER, description: 'Owner', createdByUserId: 7 },
@@ -50,7 +50,7 @@ beforeEach(async () => {
         '/projects',
         new FantasizeProjectController(config, {
             transactionalProjectService: service,
-        } as IUnleashServices).router,
+        }).router,
     );
 });
 

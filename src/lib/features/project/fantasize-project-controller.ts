@@ -29,7 +29,10 @@ const inputSchema = projectSchema
 export default class FantasizeProjectController extends Controller {
     private readonly projects: IUnleashServices['transactionalProjectService'];
 
-    constructor(config: IUnleashConfig, services: IUnleashServices) {
+    constructor(
+        config: IUnleashConfig,
+        services: Pick<IUnleashServices, 'transactionalProjectService'>,
+    ) {
         super(config);
         this.projects = services.transactionalProjectService;
         this.route({

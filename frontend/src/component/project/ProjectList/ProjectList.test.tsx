@@ -47,4 +47,5 @@ test('OSS users with CREATE_PROJECT can open the create dialog', async () => {
             'true',
         ),
     );
+    expect(screen.queryByAltText('Upgrade projects')).not.toBeInTheDocument();
 });

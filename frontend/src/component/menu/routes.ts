@@ -142,7 +142,6 @@ export const routes: IRoute[] = [
         component: ArchiveProjectList,
         type: 'protected',
         menu: {},
-        enterprise: true,
     },
 
     // Flags overview

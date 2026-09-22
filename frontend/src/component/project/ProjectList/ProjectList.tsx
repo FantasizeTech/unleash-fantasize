@@ -49,7 +49,7 @@ export const ProjectList = () => {
         }
     }, [forceListView, state.view]);
 
-    const showViewToggleButton = !(isOss() || forceListView);
+    const showViewToggleButton = !forceListView;
     const safeView = forceListView ? 'list' : state.view;
 
     const myProfileProjects = new Set(useProfile().profile?.projects || []);
@@ -87,7 +87,7 @@ export const ProjectList = () => {
                     actions={
                         <>
                             <ConditionallyRender
-                                condition={!isOss() && !isSmallScreen}
+                                condition={!isSmallScreen}
                                 show={
                                     <>
                                         <Search
@@ -99,7 +99,7 @@ export const ProjectList = () => {
                                 }
                             />
 
-                            {!isOss() && <ProjectArchiveLink />}
+                            <ProjectArchiveLink />
                             <ProjectCreationButton
                                 isDialogOpen={Boolean(state.create)}
                                 setIsDialogOpen={(create) =>
@@ -112,7 +112,7 @@ export const ProjectList = () => {
                     }
                 >
                     <ConditionallyRender
-                        condition={!isOss() && isSmallScreen}
+                        condition={isSmallScreen}
                         show={
                             <Search
                                 initialValue={state.query || ''}

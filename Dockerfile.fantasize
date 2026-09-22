@@ -1,0 +1,5 @@
+FROM unleashorg/unleash-server@sha256:5020013b7a9a93c8ed3686d36b5025399714020b3fb5ef41afd84ba37a88c050
+COPY --chown=node:node dist /unleash/dist
+COPY --chown=node:node frontend/build /unleash/frontend/build
+COPY LICENSE FANTASIZE.md /unleash/
+USER node

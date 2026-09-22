@@ -2,6 +2,7 @@ import {
     type ReactElement,
     type ReactNode,
     useCallback,
+    useEffect,
     useMemo,
     useRef,
     useState,
@@ -25,16 +26,26 @@ export const AnnouncerProvider = ({
 }: IAnnouncerProviderProps): ReactElement => {
     const [announcements, setAnnouncements] = useState<IAnnouncement[]>([]);
     const nextId = useRef(0);
+    const timers = useRef(new Set<ReturnType<typeof setTimeout>>());
+    useEffect(
+        () => () => {
+            for (const timer of timers.current) clearTimeout(timer);
+            timers.current.clear();
+        },
+        [],
+    );
 
     const announce = useCallback((message: string) => {
         const id = nextId.current++;
         setAnnouncements((prev) => [...prev, { id, message }]);
 
-        setTimeout(() => {
+        const timer = setTimeout(() => {
+            timers.current.delete(timer);
             setAnnouncements((prev) =>
                 prev.filter((announcement) => announcement.id !== id),
             );
         }, ANNOUNCEMENT_LIFETIME_MS);
+        timers.current.add(timer);
     }, []);
 
     const value = useMemo(() => ({ announce }), [announce]);
